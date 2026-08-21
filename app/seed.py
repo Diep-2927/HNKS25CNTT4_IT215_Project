@@ -1,15 +1,16 @@
 from db.database import SessionLocal
 from models import User, Event, EventTask, EventStaff, UserRole, TaskStatus, TaskPriority, EventStaffRole
+from core.security import get_password_hash
 
 def seed_data():
     db = SessionLocal()
     try:
         # Seed User
-        user = db.query(User).filter(User.email == "admin@example.com").first()
+        user = db.query(User).filter(User.email == "admin@gmail.com").first()
         if not user:
             user = User(
-                email="admin@example.com",
-                hashed_password="hashed_placeholder", # Tạm thời chưa băm, xử lý ở Tiết sau
+                email="admin@gmail.com",
+                hashed_password=get_password_hash("admin123"), 
                 full_name="Quản trị viên",
                 role=UserRole.ADMIN
             )
@@ -24,7 +25,8 @@ def seed_data():
             event = Event(
                 name="Lễ kỷ niệm 5 năm",
                 description="Kỷ niệm thành lập công ty",
-                location="Hà Nội"
+                location="Hà Nội",
+                owner_id=user.id
             )
             db.add(event)
             db.commit()

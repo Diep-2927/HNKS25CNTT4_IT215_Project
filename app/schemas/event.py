@@ -13,8 +13,9 @@ class EventCreate(EventBase):
     pass
 
 class EventResponse(EventBase):
-    id: int 
-    create_at: datetime
+    id: int
+    owner_id: int
+    created_at: datetime
     is_deleted: bool
-
+    
     model_config = ConfigDict(from_attributes=True)

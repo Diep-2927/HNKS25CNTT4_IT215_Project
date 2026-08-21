@@ -1,3 +1,4 @@
+from datetime import datetime
 import enum
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum, String, Text
 from sqlalchemy.orm import relationship
@@ -24,7 +25,7 @@ class EventTask(Base):
     priority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM)
     due_date = Column(DateTime)
     assignee_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    created_at = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.now, nullable=False)
 
     event = relationship("Event", back_populates="tasks")
     assignee = relationship("User", back_populates="tasks_assigned")

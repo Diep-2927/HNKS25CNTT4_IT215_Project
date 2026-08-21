@@ -8,7 +8,7 @@ from dependencies.auth import get_current_active_user, get_admin_user
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.get("/", response_model=List[UserResponse])
+@router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 

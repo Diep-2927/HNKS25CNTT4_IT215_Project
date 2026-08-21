@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer  
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials 
 import jwt
 from sqlalchemy.orm import Session
 from core.config import settings
@@ -7,13 +7,14 @@ from db.database import get_db
 from models import User, UserRole
 from schemas.token import TokenData
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+security = HTTPBearer()
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+    token = credentials.credentials
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Không thể xác thực thông tin (Token sai hoặc hết hạn)",
-        headers={"WWW-Authenticate": "Bearer"}
+        detail="Không thể xác thực thông tin (Token sai hoặc hết hạn)"
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
@@ -22,7 +23,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
             raise credentials_exception
         token_data = TokenData(email=email)
     except jwt.InvalidTokenError:
-        raise 
+        raise credentials_exception
 
     user = db.query(User).filter(User.email == token_data.email).first()
     if user is None:
@@ -43,4 +44,4 @@ def get_admin_user(current_user: User = Depends(get_current_active_user)):
             status_code=403, 
             detail="Không có quyền truy cập (Yêu cầu ADMIN)"
         )
-    return current_user
+    return current_user 

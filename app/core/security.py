@@ -17,12 +17,12 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(pass_bytes, hashed_pw_bytes)
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
-    to_encode = data.copy
+    to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.now(timezone) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(timezone) + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
 
     to_encode.update({"exp": expire})
     encode_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)

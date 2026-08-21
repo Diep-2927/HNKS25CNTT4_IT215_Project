@@ -1,3 +1,4 @@
+from datetime import datetime
 import enum
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Enum
 from sqlalchemy.orm import relationship
@@ -14,7 +15,7 @@ class EventStaff(Base):
     event_id = Column(Integer, ForeignKey("events.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     role = Column(Enum(EventStaffRole), default=EventStaffRole.MEMBER)
-    joined_at = Column(DateTime)
+    joined_at = Column(DateTime, default=datetime.now, nullable=False)
 
     event = relationship("Event", back_populates="staffs")
     user = relationship("User", back_populates="events_involved")

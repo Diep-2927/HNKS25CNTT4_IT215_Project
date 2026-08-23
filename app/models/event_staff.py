@@ -12,10 +12,11 @@ class EventStaff(Base):
     __tablename__ = "event_staffs"
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-    event_id = Column(Integer, ForeignKey("events.id"))
-    user_id = Column(Integer, ForeignKey("users.id"))
-    role = Column(Enum(EventStaffRole), default=EventStaffRole.MEMBER)
-    joined_at = Column(DateTime, default=datetime.now, nullable=False)
 
+    event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    role = Column(Enum(EventStaffRole), default=EventStaffRole.MEMBER, nullable=False)
+    joined_at = Column(DateTime, default=datetime.now)
+    
     event = relationship("Event", back_populates="staffs")
     user = relationship("User", back_populates="events_involved")

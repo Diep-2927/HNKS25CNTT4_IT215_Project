@@ -13,7 +13,6 @@ class EventBase(BaseModel):
 class EventCreate(EventBase):
     pass
 
-
 # Dùng khi sửa Event
 class EventUpdate(BaseModel):
     name: Optional[str] = Field(None,min_length=1,max_length=255)

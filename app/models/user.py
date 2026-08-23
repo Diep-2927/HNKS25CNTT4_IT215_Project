@@ -21,4 +21,4 @@ class User(Base):
     
     events_owned = relationship("Event", back_populates="owner", foreign_keys="Event.owner_id")
     events_involved = relationship("EventStaff", back_populates="user")
-    tasks_assigned = relationship("EventTask", back_populates="assignee")
+    tasks_assigned = relationship("EventTask",back_populates="assignee")

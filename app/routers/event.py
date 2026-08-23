@@ -46,6 +46,14 @@ def check_owner(event: Event, user: User):
 @router.post("/", response_model=EventResponse, status_code=status.HTTP_201_CREATED)
 def create_event(data: EventCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
 
+    name = data.name.strip()
+
+    if not name:
+        raise HTTPException(
+            status_code=400,
+            detail="Tên sự kiện không được để trống"
+        )
+
     # Kiểm tra ngày
     if data.start_date and data.end_date:
         if data.end_date < data.start_date:
@@ -53,7 +61,7 @@ def create_event(data: EventCreate, db: Session = Depends(get_db), current_user:
 
     # Tạo event
     event = Event(
-        name=data.name,
+        name=name,
         description=data.description,
         location=data.location,
         start_date=data.start_date,
@@ -77,8 +85,6 @@ def create_event(data: EventCreate, db: Session = Depends(get_db), current_user:
 
 
 # 2. DANH SÁCH EVENT
-# GET /events/
-
 @router.get("/", response_model=List[EventResponse])
 def list_events(search: Optional[str] = Query(None, max_length=255), db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
 
@@ -111,7 +117,12 @@ def get_event_detail(event_id: int, db: Session = Depends(get_db), current_user:
 
 # 4. CẬP NHẬT EVENT
 @router.patch("/{event_id}", response_model=EventResponse)
-def update_event(event_id: int, data: EventUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
+def update_event(
+    event_id: int,
+    data: EventUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
 
     # Tìm event
     event = get_event(event_id, db)
@@ -129,13 +140,22 @@ def update_event(event_id: int, data: EventUpdate, db: Session = Depends(get_db)
     # Kiểm tra ngày
     if start_date and end_date:
         if end_date < start_date:
-            raise HTTPException(status_code=400, detail="Ngày kết thúc phải sau ngày bắt đầu")
+            raise HTTPException(
+                status_code=400,
+                detail="Ngày kết thúc phải sau ngày bắt đầu"
+            )
 
     # Cập nhật dữ liệu
     for field, value in update_data.items():
 
         if field == "name":
             value = value.strip()
+
+            if not value:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Tên sự kiện không được để trống"
+                )
 
         setattr(event, field, value)
 

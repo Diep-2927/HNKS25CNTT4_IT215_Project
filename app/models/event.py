@@ -20,4 +20,4 @@ class Event(Base):
     # Danh sách thành viên  
     staffs = relationship("EventStaff",back_populates="event" )
     # Danh sách task    
-    tasks = relationship("EventTask", back_populates="event")
+    tasks = relationship("EventTask",back_populates="event")

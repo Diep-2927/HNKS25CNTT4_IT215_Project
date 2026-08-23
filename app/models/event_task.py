@@ -1,22 +1,32 @@
 from datetime import datetime
 import enum
-from sqlalchemy import Column,Integer,ForeignKey,DateTime,Enum
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from db.database import Base
 
-class EventStaffRole(str, enum.Enum):
-    OWNER = "OWNER"
-    MEMBER = "MEMBER"
+class TaskStatus(str, enum.Enum):
+    TODO = "TODO"
+    IN_PROGRESS = "IN_PROGRESS"
+    DONE = "DONE"
 
-class EventStaff(Base):
-    __tablename__ = "event_staffs"
+class TaskPriority(str, enum.Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    role = Column(Enum(EventStaffRole), default=EventStaffRole.MEMBER, nullable=False)
-    joined_at = Column(DateTime, default=datetime.now)
+class EventTask(Base):
+    __tablename__ = "event_tasks"
+
+    id = Column(Integer,primary_key=True,autoincrement=True)
+    event_id = Column(Integer,ForeignKey("events.id"),nullable=False)
+    title = Column(String(255),nullable=False)
+    description = Column(Text,nullable=True)
+    assignee_id = Column(Integer,ForeignKey("users.id"),nullable=True)
+    status = Column(Enum(TaskStatus),default=TaskStatus.TODO,nullable=False)
+    priority = Column(Enum(TaskPriority),default=TaskPriority.MEDIUM,nullable=False)
+    due_date = Column(DateTime,nullable=True)
+    created_at = Column(DateTime,default=datetime.now,nullable=False)
     # Quan hệ với Event
-    event = relationship("Event", back_populates="staffs")
-    # Quan hệ với User
-    user = relationship("User", back_populates="events_involved")
+    event = relationship("Event",back_populates="tasks")
+    # Quan hệ với User được giao task
+    assignee = relationship("User",back_populates="tasks_assigned")

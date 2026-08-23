@@ -6,6 +6,7 @@ from dependencies.auth import get_current_active_user
 from models import Event, EventStaff, EventStaffRole, User
 from schemas.event import EventCreate, EventResponse, EventUpdate
 from schemas.event_staff import EventStaffCreate, EventStaffResponse
+from datetime import datetime
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
@@ -168,23 +169,11 @@ def update_event(
 # 5. XÓA EVENT
 @router.delete("/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_event(event_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)):
-
-    # Tìm event
     event = get_event(event_id, db)
-
-    # Chỉ OWNER được xóa
     check_owner(event, current_user)
-
-    # Xóa các member
-    db.query(EventStaff).filter(
-        EventStaff.event_id == event.id
-    ).delete(synchronize_session=False)
-
-    # Xóa event
-    db.delete(event)
-
+    event.is_deleted = True
+    event.deleted_at = datetime.now()
     db.commit()
-
     return None
 
 

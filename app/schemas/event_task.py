@@ -11,7 +11,8 @@ class EventTaskBase(BaseModel):
     due_date: Optional[datetime] = None
 
 # Dùng khi tạo task
-class EventTaskCreate(EventTaskBase):pass
+class EventTaskCreate(EventTaskBase):
+    assignee_id: Optional[int] = None
 
 # Dùng khi cập nhật task
 class EventTaskUpdate(BaseModel):

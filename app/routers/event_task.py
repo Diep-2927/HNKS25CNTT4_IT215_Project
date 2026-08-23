@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from app.routers import event
 from db.database import get_db
 from dependencies.auth import get_current_active_user
 from models import Event, EventStaff, EventTask, User, TaskStatus, TaskPriority
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/events", tags=["Event Tasks"])
 
 # Tìm Event
 def get_event(event_id: int, db: Session):
-    event = db.query(Event).filter(Event.id == event_id).first()
+    event = db.query(Event).filter(Event.id == event_id, Event.is_deleted == False).first()
     if event is None:
         raise HTTPException(status_code=404, detail="Sự kiện không tồn tại")
     return event
@@ -49,6 +50,9 @@ def check_assignee(event_id: int, user_id: int, db: Session):
     member = get_member(event_id, user_id, db)
     if member is None:
         raise HTTPException(status_code=400, detail="Người được giao phải là thành viên của sự kiện")
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=400, detail="Người được giao không hoạt động")
     return member
 
 
@@ -69,12 +73,16 @@ def create_task(event_id: int, data: EventTaskCreate, db: Session = Depends(get_
     if not title:
         raise HTTPException(status_code=400, detail="Tên công việc không được để trống")
 
+    if data.assignee_id is not None:
+        check_assignee(event.id, data.assignee_id, db)
+
     task = EventTask(
         event_id=event.id,
         title=title,
         description=data.description,
         priority=data.priority,
         due_date=data.due_date,
+        assignee_id=data.assignee_id,
         status=TaskStatus.TODO
     )
 

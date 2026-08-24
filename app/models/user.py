@@ -19,6 +19,9 @@ class User(Base):
     role = Column(Enum(UserRole), default=UserRole.USER)
     created_at = Column(DateTime, default=datetime.now, nullable=False)
     
+    # Quan hệ 1-N: Các sự kiện do user tạo
     events_owned = relationship("Event", back_populates="owner", foreign_keys="Event.owner_id")
+    # Quan hệ N-N (qua EventStaff): Các sự kiện user tham gia
     events_involved = relationship("EventStaff", back_populates="user")
-    tasks_assigned = relationship("EventTask",back_populates="assignee")
+    # Quan hệ 1-N: Các công việc được giao cho user
+    tasks_assigned = relationship("EventTask", back_populates="assignee")

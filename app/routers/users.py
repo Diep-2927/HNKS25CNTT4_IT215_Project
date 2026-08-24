@@ -10,6 +10,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(get_current_active_user)):
+    """Lấy thông tin cá nhân của người dùng đang đăng nhập dựa trên token"""
     return current_user
 
 @router.get("/", response_model=List[UserResponse])
@@ -17,10 +18,10 @@ def get_users(
     search: Optional[str] = None,
     is_active: Optional[bool] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_admin_user)
+    current_user: User = Depends(get_admin_user) # Yêu cầu quyền ADMIN
 ):
+    """API Dành riêng cho Admin: Tra cứu, lọc danh sách toàn bộ người dùng trong hệ thống"""
     query = db.query(User)
-
     if search:
         query = query.filter(
             (User.email.ilike(f"%{search}%")) |
@@ -28,5 +29,4 @@ def get_users(
         )
     if is_active is not None:
         query = query.filter(User.is_active == is_active)
-
     return query.all()

@@ -13,6 +13,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user: UserCreate, db: Session = Depends(get_db)):
+    """API Đăng ký: Kiểm tra email trùng lặp và băm mật khẩu trước khi lưu DB"""
     existing_user = db.query(User).filter(User.email == user.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email này đã tồn tại")
@@ -30,6 +31,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(data: UserLogin, db: Session = Depends(get_db)):
+    """API Đăng nhập: Kiểm tra mật khẩu, trạng thái tài khoản và trả về JWT Bearer Token"""
     user = db.query(User).filter(User.email == data.email).first()
     
     if not user or not verify_password(data.password, user.hashed_password):
@@ -40,13 +42,10 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Tài khoản đã bị vô hiệu hóa")
 
-    if isinstance(user.role, Enum):
-        role_value = user.role.value
-    else:
-        role_value = user.role
-
+    role_value = user.role.value if isinstance(user.role, Enum) else user.role
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
+    # Đóng gói thông tin người dùng vào Token Claims
     access_token = create_access_token(
         data={
             "sub": user.email,

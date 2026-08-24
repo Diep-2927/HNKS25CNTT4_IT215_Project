@@ -9,20 +9,17 @@ class EventBase(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
 
-# Dùng khi tạo Event
 class EventCreate(EventBase):
     pass
 
-# Dùng khi sửa Event
 class EventUpdate(BaseModel):
-    name: Optional[str] = Field(None,min_length=1,max_length=255)
+    """Hỗ trợ cập nhật một phần (PATCH): toàn bộ các field đều là Optional"""
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
     description: Optional[str] = None
     location: Optional[str] = None
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
 
-
-# Dữ liệu trả về
 class EventResponse(EventBase):
     id: int
     owner_id: int

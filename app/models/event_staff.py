@@ -9,10 +9,10 @@ class EventStaffRole(str, enum.Enum):
     MEMBER = "MEMBER"
 
 class EventStaff(Base):
+    """Bảng trung gian quản lý thành viên tham gia sự kiện và vai trò tương ứng trong sự kiện"""
     __tablename__ = "event_staffs"
 
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
-
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     role = Column(Enum(EventStaffRole), default=EventStaffRole.MEMBER, nullable=False)

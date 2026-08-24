@@ -29,6 +29,6 @@ app.add_exception_handler(HTTPException, custom_http_exception_handler)
 # Xử lý lỗi validation
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
-@app.get("/test")
-def test():
-    return {"message": "API đang hoạt động ổn định"}
+@app.get("/health")
+def health():
+    return {"status": "ok"}

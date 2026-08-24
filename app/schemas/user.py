@@ -3,18 +3,19 @@ from datetime import datetime
 from models.user import UserRole
 
 class UserBase(BaseModel):
-    email: EmailStr
+    email: EmailStr 
     full_name: str = None
     is_active: bool = True
 
 class UserCreate(UserBase):
-    password: str
+    password: str 
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
 class UserResponse(UserBase):
+    """Schema trả về thông tin user"""
     id: int
     role: UserRole
     created_at: datetime

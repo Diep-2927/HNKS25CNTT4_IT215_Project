@@ -76,18 +76,42 @@ def list_tasks(event_id: int, search: str | None, task_status: TaskStatus | None
 
     return query.offset((page - 1) * size).limit(size).all()
 
-def update_task(task: EventTask, event: Event, data: EventTaskUpdate, db: Session) -> EventTask:
-    """Cập nhật task (chỉ cập nhật field được gửi lên)."""
+def update_task(task: EventTask, event: Event, data: EventTaskUpdate, current_user: User, db: Session):
+    is_owner = event.owner_id == current_user.id
+    is_assignee = task.assignee_id == current_user.id
+
+    if not is_owner and not is_assignee:
+        raise HTTPException(
+            status_code=403,
+            detail="Bạn không có quyền cập nhật task này"
+        )
+
     update_data = data.model_dump(exclude_unset=True)
 
     if "title" in update_data:
         title = update_data["title"]
-        if not title or not title.strip():
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tên công việc không được để trống")
+
+        if title is None or not title.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Tên công việc không được để trống"
+            )
+
         update_data["title"] = title.strip()
 
-    if "assignee_id" in update_data and update_data["assignee_id"] is not None:
-        check_assignee(event.id, update_data["assignee_id"], db)
+    if "assignee_id" in update_data:
+        if not is_owner:
+            raise HTTPException(
+                status_code=403,
+                detail="Chỉ OWNER mới có quyền thay đổi người được giao"
+            )
+
+        if update_data["assignee_id"] is not None:
+            check_assignee(
+                event.id,
+                update_data["assignee_id"],
+                db
+            )
 
     for field, value in update_data.items():
         setattr(task, field, value)

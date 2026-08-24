@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
+from models.event_staff import EventStaffRole
 
 class EventBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)
@@ -25,4 +26,16 @@ class EventResponse(EventBase):
     owner_id: int
     created_at: datetime
     is_deleted: bool
+    model_config = ConfigDict(from_attributes=True)
+
+class EventStaffCreate(BaseModel):
+    user_id: int
+    role: EventStaffRole = EventStaffRole.MEMBER
+
+class EventStaffResponse(BaseModel):
+    id: int
+    event_id: int
+    user_id: int
+    role: EventStaffRole
+    joined_at: datetime
     model_config = ConfigDict(from_attributes=True)

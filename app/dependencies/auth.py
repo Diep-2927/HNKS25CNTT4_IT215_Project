@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials 
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 from sqlalchemy.orm import Session
 from core.config import settings
@@ -7,49 +7,105 @@ from db.database import get_db
 from models import User, UserRole
 from schemas.token import TokenData
 
-# Khai báo schema xác thực qua Header Authorization
 security = HTTPBearer()
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
     """
-    Giải mã Token:
-    1. Kiểm tra tính hợp lệ và thời hạn của JWT Token.
-    2. Lấy email từ payload ('sub') và truy vấn User từ DB.
+    Xác thực JWT.
+
+    Quy trình:
+    1. Lấy Bearer token.
+    2. Decode JWT.
+    3. Lấy email từ sub.
+    4. Tìm User trong database.
     """
+
     token = credentials.credentials
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Không thể xác thực thông tin (Token sai hoặc hết hạn)"
+        detail="Không thể xác thực thông tin",
+        headers={
+            "WWW-Authenticate": "Bearer"
+        },
     )
+
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+        )
+
+        email = payload.get("sub")
+
+        if not email or not isinstance(email, str):
             raise credentials_exception
-        token_data = TokenData(email=email)
+
+        token_data = TokenData(
+            email=email
+        )
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token đã hết hạn",
+            headers={
+                "WWW-Authenticate": "Bearer"
+            },
+        )
+
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    user = db.query(User).filter(User.email == token_data.email).first()
+    user = (
+        db.query(User)
+        .filter(
+            User.email == token_data.email
+        )
+        .first()
+    )
+
     if user is None:
         raise credentials_exception
+
     return user
 
-def get_current_active_user(current_user: User = Depends(get_current_user)):
-    """Kiểm tra tài khoản người dùng có đang hoạt động"""
+
+def get_current_active_user(
+    current_user: User = Depends(
+        get_current_user
+    ),
+):
+    """
+    Chỉ cho phép tài khoản đang hoạt động.
+    """
+
     if not current_user.is_active:
         raise HTTPException(
-            status_code=400,
-            detail="Tài khoản đã bị khóa"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Tài khoản đã bị khóa",
         )
+
     return current_user
 
-def get_admin_user(current_user: User = Depends(get_current_active_user)):
-    """Phân quyền"""
+
+def get_admin_user(
+    current_user: User = Depends(
+        get_current_active_user
+    ),
+):
+    """
+    Chỉ cho phép ADMIN.
+    """
+
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(
-            status_code=403, 
-            detail="Không có quyền truy cập (Yêu cầu ADMIN)"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Không có quyền truy cập (Yêu cầu ADMIN)",
         )
+
     return current_user

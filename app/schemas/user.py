@@ -4,7 +4,7 @@ from models.user import UserRole
 
 class UserBase(BaseModel):
     email: EmailStr 
-    full_name: str = None
+    full_name: str
     is_active: bool = True
 
 class UserCreate(UserBase):

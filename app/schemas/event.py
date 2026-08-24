@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, Field
-from models.event_staff import EventStaffRole
+from models.event import EventStaffRole
 
 class EventBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)

@@ -4,6 +4,10 @@ from sqlalchemy import Column, Enum, Integer, String, Text, DateTime, Boolean, F
 from sqlalchemy.orm import relationship
 from db.database import Base
 
+class EventStaffRole(str, enum.Enum):
+    OWNER = "OWNER"
+    MEMBER = "MEMBER"
+
 class Event(Base):
     __tablename__ = "events"
 

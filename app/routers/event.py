@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from db.database import get_db
 from dependencies.auth import get_current_active_user
 from models import User
-from schemas.event import EventCreate, EventResponse, EventUpdate
-from schemas.event_staff import EventStaffCreate, EventStaffResponse
+from schemas.event import EventCreate, EventResponse, EventUpdate, EventStaffCreate, EventStaffResponse
 from services import event, event_member
 
 router = APIRouter(prefix="/events", tags=["Events"])

@@ -41,7 +41,7 @@ def update_task(task_id: int, data: EventTaskUpdate, db: Session = Depends(get_d
     task = event_task.get_task(task_id, db)
     event_obj = event.get_event(task.event_id, db)
     event_task.check_task_permission(task, event_obj, current_user)
-    return event_task.update_task(task, event_obj, data, db)
+    return event_task.update_task(task, event_obj, data, current_user, db)
 
 
 @router.delete("/event-tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)

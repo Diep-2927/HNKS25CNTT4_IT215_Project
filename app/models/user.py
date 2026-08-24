@@ -1,12 +1,14 @@
 import enum
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Enum
 from sqlalchemy.orm import relationship
 from db.database import Base
-from datetime import datetime
+
 
 class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     USER = "USER"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -15,13 +17,10 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(255), nullable=False)
-    is_active = Column(Boolean, default=True)
-    role = Column(Enum(UserRole), default=UserRole.USER)
+    is_active = Column(Boolean, default=True, nullable=False)
+    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
     created_at = Column(DateTime, default=datetime.now, nullable=False)
-    
-    # Quan hệ 1-N: Các sự kiện do user tạo
-    events_owned = relationship("Event", back_populates="owner", foreign_keys="Event.owner_id")
-    # Quan hệ N-N (qua EventStaff): Các sự kiện user tham gia
-    events_involved = relationship("EventStaff", back_populates="user")
-    # Quan hệ 1-N: Các công việc được giao cho user
-    tasks_assigned = relationship("EventTask", back_populates="assignee")
+
+    events_owned = relationship("Event",back_populates="owner",foreign_keys="Event.owner_id")
+    events_involved = relationship("EventStaff",back_populates="user",cascade="all, delete-orphan")
+    tasks_assigned = relationship("EventTask",back_populates="assignee")

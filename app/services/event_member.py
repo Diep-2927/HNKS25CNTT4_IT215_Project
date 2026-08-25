@@ -40,7 +40,7 @@ def list_members(event_id, db: Session):
     return db.query(EventStaff).filter(EventStaff.event_id == event_id).order_by(EventStaff.joined_at).all()
 
 def remove_member(event, user_id, db: Session):
-    """Xóa thành viên khỏi sự kiện (Bảo vệ: Tuyệt đối không xóa OWNER khỏi sự kiện)"""
+    """Xóa thành viên khỏi sự kiện"""
     member = db.query(EventStaff).filter(
         EventStaff.event_id == event.id,
         EventStaff.user_id == user_id

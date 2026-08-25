@@ -4,14 +4,14 @@ from models import Event, EventStaff, EventTask, TaskPriority, TaskStatus, User
 from schemas.event_task import EventTaskCreate, EventTaskUpdate
 
 def get_task(task_id: int, db: Session) -> EventTask:
-    """Lấy task theo ID."""
+    """Lấy task theo ID"""
     task = db.query(EventTask).filter(EventTask.id == task_id).first()
     if task is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Công việc không tồn tại")
     return task
 
 def check_assignee(event_id: int, user_id: int, db: Session) -> EventStaff:
-    """Kiểm tra người được giao task: tồn tại trong EventStaff và đang hoạt động."""
+    """Kiểm tra người được giao task: tồn tại trong EventStaff và đang hoạt động"""
     member = db.query(EventStaff).filter(EventStaff.event_id == event_id, EventStaff.user_id == user_id).first()
     if member is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Người được giao phải là thành viên của sự kiện")
@@ -22,7 +22,7 @@ def check_assignee(event_id: int, user_id: int, db: Session) -> EventStaff:
     return member
 
 def check_task_permission(task: EventTask, event: Event, user: User) -> None:
-    """Quyền cập nhật task: OWNER của event hoặc người được giao task."""
+    """Quyền cập nhật task: OWNER của event hoặc người được giao task"""
     if event.owner_id == user.id or task.assignee_id == user.id:
         return
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bạn không có quyền thực hiện thao tác này")

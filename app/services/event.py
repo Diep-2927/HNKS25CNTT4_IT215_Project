@@ -28,7 +28,7 @@ def check_owner(event: Event, user: User):
 def create_event(data, current_user, db: Session):
     """
     Tạo sự kiện mới:
-    1. Validate logic thời gian bắt đầu và kết thúc.
+    1. Validate logic thời gian bắt đầu và kết thúc
     2. Tạo bản ghi Event
     """
     name = data.name.strip()

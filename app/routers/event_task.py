@@ -10,7 +10,13 @@ from services import event, event_task
 router = APIRouter(prefix="", tags=["Event Tasks"])
 
 
-@router.post("/events/{event_id}/event-tasks", response_model=EventTaskResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/events/{event_id}/event-tasks",
+    response_model=EventTaskResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Event Task",
+    description="Tạo một công việc mới cho sự kiện. Chỉ thành viên của sự kiện mới có quyền tạo",
+)
 def create_task(event_id: int, data: EventTaskCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)) -> EventTaskResponse:
     """Thành viên của event có thể tạo task"""
     event_obj = event.get_event(event_id, db)
@@ -18,7 +24,13 @@ def create_task(event_id: int, data: EventTaskCreate, db: Session = Depends(get_
     return event_task.create_task(event_obj.id, data, db)
 
 
-@router.get("/events/{event_id}/event-tasks", response_model=list[EventTaskResponse])
+@router.get(
+    "/events/{event_id}/event-tasks",
+    response_model=list[EventTaskResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List Event Tasks",
+    description="Lấy danh sách các công việc của sự kiện. Có hỗ trợ phân trang, sắp xếp và lọc theo trạng thái, độ ưu tiên, người được giao",
+)
 def list_tasks(event_id: int, search: str | None = Query(None, max_length=255), task_status: TaskStatus | None = Query(None, alias="status"), priority: TaskPriority | None = None, assignee_id: int | None = None, page: int = Query(1, ge=1), size: int = Query(10, ge=1, le=100), sort_by: str = Query("created_at"), sort_order: str = Query("desc"), db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)) -> list[EventTaskResponse]:
     """Danh sách task của event"""
     event_obj = event.get_event(event_id, db)
@@ -26,7 +38,13 @@ def list_tasks(event_id: int, search: str | None = Query(None, max_length=255), 
     return event_task.list_tasks(event_obj.id, search, task_status, priority, assignee_id, page, size, sort_by, sort_order, db)
 
 
-@router.get("/event-tasks/{task_id}", response_model=EventTaskResponse)
+@router.get(
+    "/event-tasks/{task_id}",
+    response_model=EventTaskResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get Task Details",
+    description="Lấy thông tin chi tiết của một công việc. Chỉ thành viên của sự kiện mới có quyền xem",
+)
 def get_task_detail(task_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)) -> EventTaskResponse:
     """Xem chi tiết task"""
     task = event_task.get_task(task_id, db)
@@ -35,7 +53,13 @@ def get_task_detail(task_id: int, db: Session = Depends(get_db), current_user: U
     return task
 
 
-@router.patch("/event-tasks/{task_id}", response_model=EventTaskResponse)
+@router.patch(
+    "/event-tasks/{task_id}",
+    response_model=EventTaskResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update Task",
+    description="Cập nhật thông tin công việc. Chỉ Owner của sự kiện hoặc người được giao công việc (Assignee) mới có quyền cập nhật",
+)
 def update_task(task_id: int, data: EventTaskUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)) -> EventTaskResponse:
     """OWNER hoặc ASSIGNEE được update task"""
     task = event_task.get_task(task_id, db)
@@ -44,7 +68,12 @@ def update_task(task_id: int, data: EventTaskUpdate, db: Session = Depends(get_d
     return event_task.update_task(task, event_obj, data, current_user, db)
 
 
-@router.delete("/event-tasks/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/event-tasks/{task_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Task",
+    description="Xóa công việc khỏi sự kiện. Yêu cầu quyền Owner của sự kiện",
+)
 def delete_task(task_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_active_user)) -> None:
     """Chỉ OWNER được xóa task"""
     task = event_task.get_task(task_id, db)

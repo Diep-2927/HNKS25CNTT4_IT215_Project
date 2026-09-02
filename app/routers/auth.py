@@ -12,9 +12,15 @@ from schemas.token import Token
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a new user",
+    description="API Đăng ký: Kiểm tra email trùng lặp và băm mật khẩu trước khi lưu DB",
+)
 def register(user: UserCreate, db: Session = Depends(get_db)) -> UserResponse:
-    """API Đăng ký: Kiểm tra email trùng lặp và băm mật khẩu trước khi lưu DB."""
+    """API Đăng ký: Kiểm tra email trùng lặp và băm mật khẩu trước khi lưu DB"""
     if db.query(User).filter(User.email == user.email).first():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email này đã tồn tại")
 
@@ -29,9 +35,15 @@ def register(user: UserCreate, db: Session = Depends(get_db)) -> UserResponse:
     return new_user
 
 
-@router.post("/login", response_model=Token)
+@router.post(
+    "/login",
+    response_model=Token,
+    status_code=status.HTTP_200_OK,
+    summary="User Login",
+    description="API Đăng nhập: Kiểm tra mật khẩu, trạng thái tài khoản và trả về JWT Bearer Token",
+)
 def login(data: UserLogin, db: Session = Depends(get_db)) -> dict:
-    """API Đăng nhập: Kiểm tra mật khẩu, trạng thái tài khoản và trả về JWT Bearer Token."""
+    """API Đăng nhập: Kiểm tra mật khẩu, trạng thái tài khoản và trả về JWT Bearer Token"""
     user = db.query(User).filter(User.email == data.email).first()
 
     if not user or not verify_password(data.password, user.hashed_password):
@@ -39,6 +51,7 @@ def login(data: UserLogin, db: Session = Depends(get_db)) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Tài khoản hoặc mật khẩu không chính xác",
         )
+    
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tài khoản đã bị vô hiệu hóa")
 
